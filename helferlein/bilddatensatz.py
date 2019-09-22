@@ -6,8 +6,7 @@ from keras.preprocessing import image
 from keras.applications.vgg16 import preprocess_input
 import numpy as np
 
-IMG_SIZE = (224,224)
-   
+  
 class bilddatensatz:
     
     #
@@ -20,9 +19,13 @@ class bilddatensatz:
     #   ...
     # ]
     #
-    def __init__(self, root_folder):
+    def __init__(self, root_folder, img_size, inputs_fuer_VGG16=False):
         
-        print("bilddatensatz-Klasse aus der Datei")
+        print("!!!")
+        
+        self.img_size = img_size
+        
+        self.inputs_fuer_VGG16 = inputs_fuer_VGG16
         
         self.all_training_items = []
        
@@ -77,21 +80,26 @@ class bilddatensatz:
         
         img = cv2.imread(absolute_filename)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)                
-        img = cv2.resize(img, IMG_SIZE, interpolation=cv2.INTER_AREA)
-                    
-        x = img.astype(float)
-        x = np.expand_dims(x, axis=0)
-        #print("x has shape", x.shape)                
-        #print("x has mean", np.mean(x))        
-        # From the VGG paper:
-        # "The only pre-processing we do is subtracting the mean RGB value,
-        # computed on the training set, from each pixel."
-        #
-        # see imagenet_utils.py
-        #
-        x = preprocess_input(x)
-        #print("x has mean", np.mean(x))   
-        img_preprocessed = x.reshape((224,224,3))
+        img = cv2.resize(img,
+                         self.img_size,
+                         interpolation=cv2.INTER_AREA)
+        
+        if self.inputs_fuer_VGG16:                    
+            x = img.astype(float)
+            x = np.expand_dims(x, axis=0)
+            #print("x has shape", x.shape)                
+            #print("x has mean", np.mean(x))        
+            # From the VGG paper:
+            # "The only pre-processing we do is subtracting the mean RGB value,
+            # computed on the training set, from each pixel."
+            #
+            # see imagenet_utils.py
+            #
+            x = preprocess_input(x)
+            #print("x has mean", np.mean(x))   
+            img_preprocessed = x.reshape((224,224,3))
+        else:            
+            img_preprocessed = img * (1.0 / 255.0)
         
         return img, img_preprocessed
         
